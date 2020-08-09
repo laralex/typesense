@@ -53,6 +53,9 @@ include(cmake/RocksDB.cmake)
 include(cmake/GoogleTest.cmake)
 include(cmake/TestResources.cmake)
 include(cmake/Iconv.cmake)
+# include(cmake/brpc.cmake)
+set(BRPC_NAME brpc)
+set(BRAFT_NAME braft)
 
 FILE(GLOB SRC_FILES src/*.cpp)
 FILE(GLOB TEST_FILES test/*.cpp)
@@ -133,10 +136,11 @@ target_compile_definitions(
 set(ROCKSDB_LIBS rocksdb ${SNAPPY_LIBRARIES} ${ZLIB_LIBRARIES})
 
 if (APPLE)
+	message("!@(*#)(!@*#()!@#*!)@(# IN APPLE") 
     set(STD_LIB -static-libstdc++) # https://stackoverflow.com/a/26543140/131050 (can't statically link libgcc on Mac)
 
     FIND_PACKAGE(ngHTTP2 REQUIRED)
-    set(CURL_LIBRARIES ${NGHTTP2_LIBRARIES} ${CURL_LIBRARIES}) # nghttp2 was not being statically built
+    set(CURL_LIBRARIES ${} ${CURL_LIBRARIES}) # nghttp2 was not bein to `libssh2_init' built
     set(SYSTEM_LIBS "-framework CoreFoundation" "-framework CoreGraphics" "-framework CoreData"
             "-framework CoreText" "-framework Security" "-framework Foundation"
             "-Wl,-U,_MallocExtension_ReleaseFreeMemory" "-Wl,-U,_ProfilerStart" "-Wl,-U,_ProfilerStop")
@@ -152,6 +156,7 @@ set(CORE_LIBS h2o-evloop iconv ${CURL_LIBRARIES} for ${ICU_ALL_LIBRARIES} ${G3LO
 
 set(CORE_LIBS braft brpc ${LevelDB_LIBRARIES} glog ${CORE_LIBS} ${GFLAGS_LIBRARIES} ${PROTOBUF_LIBRARIES} ${SYSTEM_LIBS})
 
+message("A*(*)(*)(*)(*)(* CORE_LIBS: ${CORE_LIBS}")
 target_link_libraries(typesense-core ${CORE_LIBS})
 target_link_libraries(typesense-server ${CORE_LIBS})
 target_link_libraries(search ${CORE_LIBS})

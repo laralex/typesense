@@ -154,7 +154,7 @@ int init_logger(Config & config, const std::string & server_version) {
         FLAGS_logbuflevel = -1;
 
         // available only on glog master (ensures that log file name is constant)
-        FLAGS_timestamp_in_logfile_name = false;
+        // FLAGS_timestamp_in_logfile_name = false;
 
         std::string log_path = log_dir + "/" + "typesense.log";
 
