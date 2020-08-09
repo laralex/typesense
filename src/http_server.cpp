@@ -345,6 +345,17 @@ int HttpServer::catch_all_handler(h2o_handler_t *_self, h2o_req_t *req) {
         api_auth_key_sent = query_map[AUTH_HEADER];
     }
 
+    // Extract firebase token from header. If that does not exist, look for a GET parameter.
+    std::string firebase_token_sent = "";
+
+    ssize_t firebase_header_cursor = h2o_find_header_by_str(&req->headers, FIREBASE_HEADER, strlen(FIREBASE_HEADER), -1);
+    if(firebase_header_cursor != -1) {
+        h2o_iovec_t & slot = req->headers.entries[firebase_header_cursor].value;
+        firebase_token_sent = std::string(slot.base, slot.len);
+    } else if(query_map.count(FIREBASE_HEADER) != 0) {
+        firebase_token_sent = query_map[FIREBASE_HEADER];
+    }
+
     route_path *rpath = nullptr;
     uint64_t route_hash = self->http_server->find_route(path_parts, http_method, &rpath);
 
@@ -360,9 +371,10 @@ int HttpServer::catch_all_handler(h2o_handler_t *_self, h2o_req_t *req) {
         http_req* request = new http_req(req, http_method, route_hash, query_map, req_body);
         http_res* response = new http_res();
 
-        bool authenticated = self->http_server->auth_handler(*request, *rpath, api_auth_key_sent);
+        bool authenticated = self->http_server->auth_handler(*request, *rpath, api_auth_key_sent, firebase_token_sent);
         if(!authenticated) {
             std::string message = std::string("{\"message\": \"Forbidden - a valid `") + AUTH_HEADER +
+                                   "` or `" + FIREBASE_HEADER + 
                                    "` header must be sent.\"}";
 
             delete request;
@@ -430,7 +442,7 @@ int HttpServer::send_response(h2o_req_t *req, int status_code, const std::string
 }
 
 void HttpServer::set_auth_handler(bool (*handler)(http_req& req, const route_path& rpath,
-                                                  const std::string& auth_key)) {
+                                                  const std::string& auth_key, const std::string& firebase_token)) {
     auth_handler = handler;
 }
 

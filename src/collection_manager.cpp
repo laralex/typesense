@@ -223,6 +223,17 @@ bool CollectionManager::auth_key_matches(const std::string& auth_key_sent,
     return auth_manager.authenticate(auth_key_sent, action, collection, params);
 }
 
+bool CollectionManager::firebase_token_matches(const std::string& firebase_token_sent,
+                                               const std::string& action,
+                                               const std::string& collection,
+                                               std::map<std::string, std::string> & params) {
+    if(firebase_token_sent.empty()) {
+        return false;
+    }
+
+    return auth_manager.authenticate(firebase_token_sent, action, collection, params);
+}
+
 Option<Collection*> CollectionManager::create_collection(const std::string name, const std::vector<field> & fields,
                                                          const std::string & default_sorting_field,
                                                          const uint64_t created_at) {

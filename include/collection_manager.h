@@ -72,6 +72,9 @@ public:
     bool auth_key_matches(const std::string& auth_key_sent, const std::string& action,
                           const std::string& collection, std::map<std::string, std::string> & params);
 
+    bool firebase_token_matches(const std::string& firebase_token_sent, const std::string& action,
+                                const std::string& collection, std::map<std::string, std::string> & params);
+
     Option<Collection*> create_collection(const std::string name, const std::vector<field> & fields,
                                           const std::string & default_sorting_field,
                                           const uint64_t created_at = static_cast<uint64_t>(std::time(nullptr)));

@@ -134,6 +134,13 @@ public:
         std::map<std::string, std::string> & params
     );
 
+    bool authenticate_firebase(
+        const std::string& req_firebase_token,
+        const std::string& action,
+        const std::string& collection,
+        std::map<std::string, std::string> & params
+    );
+
     Option<std::string> params_from_scoped_key(
         const std::string& scoped_api_key,
         const std::string& action,

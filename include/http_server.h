@@ -61,7 +61,7 @@ private:
 
     bool cors_enabled;
 
-    bool (*auth_handler)(http_req& req, const route_path& rpath, const std::string& auth_key);
+    bool (*auth_handler)(http_req& req, const route_path& rpath, const std::string& auth_key, const std::string& firebase_token);
 
     static void on_accept(h2o_socket_t *listener, const char *err);
 
@@ -96,7 +96,7 @@ public:
     uint64_t node_state() const;
 
     void set_auth_handler(bool (*handler)(http_req & req, const route_path & rpath,
-                          const std::string & auth_key));
+                          const std::string & auth_key, const std::string & firebase_token));
 
     void get(const std::string & path, bool (*handler)(http_req & req, http_res & res), bool async = false);
 
@@ -128,5 +128,6 @@ public:
     std::string get_version();
 
     static constexpr const char* AUTH_HEADER = "x-typesense-api-key";
+    static constexpr const char* FIREBASE_HEADER = "x-firebase-token";
     static constexpr const char* STOP_SERVER_MESSAGE = "STOP_SERVER";
 };

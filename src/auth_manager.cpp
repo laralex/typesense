@@ -193,6 +193,11 @@ bool AuthManager::authenticate(const std::string& req_api_key, const std::string
     return false;
 }
 
+bool AuthManager::authenticate_firebase(const std::string& req_firebase_token, const std::string& action,
+                               const std::string& collection, std::map<std::string, std::string> & params) {
+    return true;
+}
+
 Option<std::string> AuthManager::params_from_scoped_key(const std::string &scoped_api_key, const std::string& action,
                                                         const std::string& collection) {
     // allow only searches from scoped keys

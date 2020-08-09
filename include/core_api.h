@@ -2,7 +2,7 @@
 
 #include "http_server.h"
 
-bool handle_authentication(http_req& req, const route_path& rpath, const std::string& auth_key);
+bool handle_authentication(http_req& req, const route_path& rpath, const std::string& auth_key, const std::string& firebase_token);
 
 // Collections
 

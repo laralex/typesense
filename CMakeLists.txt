@@ -136,7 +136,7 @@ target_compile_definitions(
 set(ROCKSDB_LIBS rocksdb ${SNAPPY_LIBRARIES} ${ZLIB_LIBRARIES})
 
 if (APPLE)
-	message("!@(*#)(!@*#()!@#*!)@(# IN APPLE") 
+    # message("!@(*#)(!@*#()!@#*!)@(# IN APPLE") 
     set(STD_LIB -static-libstdc++) # https://stackoverflow.com/a/26543140/131050 (can't statically link libgcc on Mac)
 
     FIND_PACKAGE(ngHTTP2 REQUIRED)
@@ -150,6 +150,7 @@ else()
     list(APPEND ROCKSDB_LIBS rt)
 endif()
 
+message("!!!!!!!!!!!!!!!! CURL LIBRARIES: ${CURL_LIBRARIES}")
 set(ICU_ALL_LIBRARIES ${ICU_I18N_LIBRARIES} ${ICU_LIBRARIES} ${ICU_DATA_LIBRARIES})
 set(CORE_LIBS h2o-evloop iconv ${CURL_LIBRARIES} for ${ICU_ALL_LIBRARIES} ${G3LOGGER_LIBRARIES}
               ${ROCKSDB_LIBS} ${OPENSSL_LIBRARIES} pthread dl ${STD_LIB})
