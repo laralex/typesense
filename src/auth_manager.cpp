@@ -90,8 +90,9 @@ uint32_t AuthManager::get_next_api_key_id() {
     return next_api_key_id++;
 }
 
-Option<bool> AuthManager::init(Store *store) {
+Option<bool> AuthManager::init(Store *store, FirebaseConfig&& firebase_config) {
     this->store = store;
+    this->firebase_config = std::move(firebase_config);
 
     std::string next_api_key_id_str;
     StoreStatus next_api_key_id_status = store->get(API_KEY_NEXT_ID_KEY, next_api_key_id_str);
@@ -193,9 +194,10 @@ bool AuthManager::authenticate(const std::string& req_api_key, const std::string
     return false;
 }
 
-bool AuthManager::authenticate_firebase(const std::string& req_firebase_token, const std::string& action,
-                               const std::string& collection, std::map<std::string, std::string> & params) {
-    return true;
+bool AuthManager::authenticate_firebase(const std::string& req_firebase_token) {
+    //const firebase_token_t& token = parse_token(req_firebase_token); 
+    std::string token; // token.uid
+    return firebase_config.contains_uid(token);
 }
 
 Option<std::string> AuthManager::params_from_scoped_key(const std::string &scoped_api_key, const std::string& action,

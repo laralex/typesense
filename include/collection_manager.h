@@ -7,6 +7,7 @@
 #include "field.h"
 #include "collection.h"
 #include "auth_manager.h"
+#include "firebase_config.h"
 
 // Singleton, for managing meta information of all collections and house keeping
 class CollectionManager {
@@ -32,7 +33,8 @@ private:
 
     std::string bootstrap_auth_key;
     std::string bootstrap_search_only_auth_key;
-
+    bool is_firebase_configured;
+    
     size_t default_num_indices;
 
     CollectionManager();
@@ -58,7 +60,7 @@ public:
     CollectionManager(CollectionManager const&) = delete;
     void operator=(CollectionManager const&) = delete;
 
-    void init(Store *store, const size_t default_num_indices, const std::string & auth_key);
+    void init(Store *store, const size_t default_num_indices, const std::string & auth_key, FirebaseConfig&& firebase_config);
 
     Option<bool> load(const size_t init_batch_size=1000);
 
@@ -72,8 +74,7 @@ public:
     bool auth_key_matches(const std::string& auth_key_sent, const std::string& action,
                           const std::string& collection, std::map<std::string, std::string> & params);
 
-    bool firebase_token_matches(const std::string& firebase_token_sent, const std::string& action,
-                                const std::string& collection, std::map<std::string, std::string> & params);
+    bool firebase_token_matches(const std::string& firebase_token_sent);
 
     Option<Collection*> create_collection(const std::string name, const std::vector<field> & fields,
                                           const std::string & default_sorting_field,

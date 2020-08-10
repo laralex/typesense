@@ -23,8 +23,8 @@ bool handle_authentication(http_req& req, const route_path& rpath, const std::st
         return true;
     }
 
-    return collectionManager.auth_key_matches(auth_key, rpath.action, collection, req.params)
-        && collectionManager.firebase_token_matches(firebase_token, rpath.action, collection, req.params);
+    return collectionManager.firebase_token_matches(firebase_token) && 
+           collectionManager.auth_key_matches(auth_key, rpath.action, collection, req.params);
 }
 
 bool get_collections(http_req & req, http_res & res) {

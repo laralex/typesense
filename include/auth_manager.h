@@ -6,6 +6,7 @@
 #include "json.hpp"
 #include "option.h"
 #include "store.h"
+#include "firebase_config.h"
 
 struct api_key_t {
     uint32_t id;
@@ -100,6 +101,7 @@ class AuthManager {
 private:
 
     std::map<std::string, api_key_t> api_keys;  // stores key_value => key mapping
+    FirebaseConfig firebase_config;
     Store *store;
 
     // Auto incrementing API KEY ID
@@ -117,7 +119,7 @@ public:
 
     AuthManager() = default;
 
-    Option<bool> init(Store *store);
+    Option<bool> init(Store *store, FirebaseConfig&& firebase_config = FirebaseConfig());
 
     Option<std::vector<api_key_t>> list_keys();
 
@@ -134,12 +136,7 @@ public:
         std::map<std::string, std::string> & params
     );
 
-    bool authenticate_firebase(
-        const std::string& req_firebase_token,
-        const std::string& action,
-        const std::string& collection,
-        std::map<std::string, std::string> & params
-    );
+    bool authenticate_firebase(const std::string& req_firebase_token);
 
     Option<std::string> params_from_scoped_key(
         const std::string& scoped_api_key,

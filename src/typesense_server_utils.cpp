@@ -337,9 +337,19 @@ int run_server(const Config & config, const std::string & version, void (*master
     }
 
     Store store(db_dir);
+    FirebaseConfig firebase_config{};
+    if (!config.get_firebase_config_path().empty()) {
+        bool firebase_config_read_succeeded = FirebaseConfig::from_json_file(config.get_firebase_config_path(), firebase_config);
+        if (!firebase_config_read_succeeded || !firebase_config.is_configured()){
+            LOG(ERROR) << "CRITICAL ERROR: Couldn't parse Firebase config json for Typesense (improper JSON or IO error or deserialization error).";
+            return 1;
+        }
+    }
+
     CollectionManager & collectionManager = CollectionManager::get_instance();
     collectionManager.init(&store, config.get_indices_per_collection(),
-                           config.get_api_key());
+                           config.get_api_key(),
+                           std::move(firebase_config));
 
     curl_global_init(CURL_GLOBAL_SSL);
     HttpClient & httpClient = HttpClient::get_instance();

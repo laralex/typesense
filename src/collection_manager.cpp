@@ -50,12 +50,14 @@ void CollectionManager::add_to_collections(Collection* collection) {
 
 void CollectionManager::init(Store *store,
                              const size_t default_num_indices,
-                             const std::string & auth_key) {
+                             const std::string & auth_key,
+                             FirebaseConfig&& firebase_config = FirebaseConfig()) {
     this->store = store;
     this->bootstrap_auth_key = auth_key;
     this->default_num_indices = default_num_indices;
 
-    auth_manager.init(store);
+    is_firebase_configured = firebase_config.is_configured();
+    auth_manager.init(store, std::move(firebase_config));
 }
 
 Option<bool> CollectionManager::load(const size_t init_batch_size) {
@@ -223,15 +225,16 @@ bool CollectionManager::auth_key_matches(const std::string& auth_key_sent,
     return auth_manager.authenticate(auth_key_sent, action, collection, params);
 }
 
-bool CollectionManager::firebase_token_matches(const std::string& firebase_token_sent,
-                                               const std::string& action,
-                                               const std::string& collection,
-                                               std::map<std::string, std::string> & params) {
+bool CollectionManager::firebase_token_matches(const std::string& firebase_token_sent) {
+    if (!is_firebase_configured) {
+        return true;
+    }
+    
     if(firebase_token_sent.empty()) {
         return false;
     }
 
-    return auth_manager.authenticate(firebase_token_sent, action, collection, params);
+    return auth_manager.authenticate_firebase(firebase_token_sent);
 }
 
 Option<Collection*> CollectionManager::create_collection(const std::string name, const std::vector<field> & fields,

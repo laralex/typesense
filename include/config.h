@@ -11,6 +11,7 @@ private:
     std::string log_dir;
 
     std::string api_key;
+    std::string firebase_config_path;
 
     // @deprecated
     std::string search_only_api_key;
@@ -58,6 +59,10 @@ public:
         this->api_key = api_key;
     }
 
+    void set_firebase_config_path(const std::string & firebase_config_path) {
+        this->firebase_config_path = firebase_config_path;
+    }
+
     // @deprecated
     void set_search_only_api_key(const std::string & search_only_api_key) {
         this->search_only_api_key = search_only_api_key;
@@ -103,6 +108,10 @@ public:
 
     std::string get_api_key() const {
         return this->api_key;
+    }
+
+    std::string get_firebase_config_path() const {
+        return this->firebase_config_path;
     }
 
     // @deprecated
@@ -172,6 +181,10 @@ public:
         // @deprecated
         this->search_only_api_key = get_env("TYPESENSE_SEARCH_ONLY_API_KEY");
 
+        if(!get_env("TYPESENSE_FIREBASE_CONFIG_PATH").empty()){
+            this->firebase_config_path = get_env("TYPESENSE_FIREBASE_CONFIG_PATH");
+        }
+
         if(!get_env("TYPESENSE_LISTEN_ADDRESS").empty()) {
             this->api_address = get_env("TYPESENSE_LISTEN_ADDRESS");
         }
@@ -238,6 +251,10 @@ public:
             this->api_key = reader.Get("server", "api-key", "");
         }
 
+        if(reader.Exists("server", "firebase-config-path")) {
+            this->firebase_config_path = reader.Get("server", "firebase-config-path", "");
+        }
+
         // @deprecated
         if(reader.Exists("server", "search-only-api-key")) {
             this->search_only_api_key = reader.Get("server", "search-only-api-key", "");
@@ -299,6 +316,10 @@ public:
 
         if(options.exist("api-key")) {
             this->api_key = options.get<std::string>("api-key");
+        }
+
+        if(options.exist("firebase-config-path")) {
+            this->firebase_config_path = options.get<std::string>("firebase-config-path");
         }
 
         // @deprecated

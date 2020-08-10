@@ -136,11 +136,10 @@ target_compile_definitions(
 set(ROCKSDB_LIBS rocksdb ${SNAPPY_LIBRARIES} ${ZLIB_LIBRARIES})
 
 if (APPLE)
-    # message("!@(*#)(!@*#()!@#*!)@(# IN APPLE") 
     set(STD_LIB -static-libstdc++) # https://stackoverflow.com/a/26543140/131050 (can't statically link libgcc on Mac)
 
     FIND_PACKAGE(ngHTTP2 REQUIRED)
-    set(CURL_LIBRARIES ${} ${CURL_LIBRARIES}) # nghttp2 was not bein to `libssh2_init' built
+    set(CURL_LIBRARIES ${NGHTTP2_LIBRARIES} ${CURL_LIBRARIES}) # nghttp2 was not being statically built
     set(SYSTEM_LIBS "-framework CoreFoundation" "-framework CoreGraphics" "-framework CoreData"
             "-framework CoreText" "-framework Security" "-framework Foundation"
             "-Wl,-U,_MallocExtension_ReleaseFreeMemory" "-Wl,-U,_ProfilerStart" "-Wl,-U,_ProfilerStop")
