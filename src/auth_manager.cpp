@@ -1,6 +1,7 @@
 #include "auth_manager.h"
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <jwt-cpp/jwt.h>
 
 constexpr const char* AuthManager::DOCUMENTS_SEARCH_ACTION;
 
@@ -93,6 +94,16 @@ uint32_t AuthManager::get_next_api_key_id() {
 Option<bool> AuthManager::init(Store *store, FirebaseConfig&& firebase_config) {
     this->store = store;
     this->firebase_config = std::move(firebase_config);
+    for(const auto& kv : this->firebase_config.get_public_keys()){
+        auto verifier = jwt::verify()
+            // exp + iat are checked by default
+            .allow_algorithm(jwt::algorithm::rs256{ kv.second })
+            .with_audience(this->firebase_config.get_project_id())
+            .with_issuer("https://securetoken.google.com/" + this->firebase_config.get_project_id())
+            .with_claim("kid", jwt::claim( kv.first ));
+        this->jwt_verifiers.emplace(kv.first, std::move(verifier));
+    }
+    
 
     std::string next_api_key_id_str;
     StoreStatus next_api_key_id_status = store->get(API_KEY_NEXT_ID_KEY, next_api_key_id_str);
@@ -195,9 +206,44 @@ bool AuthManager::authenticate(const std::string& req_api_key, const std::string
 }
 
 bool AuthManager::authenticate_firebase(const std::string& req_firebase_token) {
-    //const firebase_token_t& token = parse_token(req_firebase_token); 
-    std::string token; // token.uid
-    return firebase_config.contains_uid(token);
+    auto decoded = jwt::decode(req_firebase_token);
+
+    if (!decoded.has_key_id()){
+        LOG(ERROR) << "Firebase auth error: No KID claim given in a token";
+        return false;
+    }
+
+    jwt_verifiers.at(decoded.get_key_id()).verify(decoded);
+
+    if (!decoded.has_payload_claim("auth_time")) {
+        LOG(ERROR) << "Firebase auth error: No AUTO_TIME claim given in a token";
+        return false;
+    }
+
+    auto auth_time = decoded.get_payload_claim("auth_time");
+    if (auth_time.get_type() != jwt::claim::type::int64){
+        LOG(ERROR) << "Firebase auth error: Given AUTH_TIME claim in a token is not a timestamp: " << auth_time;
+        return false;
+    }
+
+    bool auth_time_verified = auth_time.as_date() <= jwt::default_clock().now();
+    if (!auth_time_verified) {
+        LOG(ERROR) << "Firebase auth error: Given AUTH_TIME in a token is not in the past: " << auth_time;
+        return false;
+    }
+    
+    if (!decoded.has_subject()){
+        LOG(ERROR) << "Firebase auth error: No Firebase UID given in a token (SUB claim)";
+        return false;
+    }
+
+    auto uid = decoded.get_subject();
+    bool uid_verified = firebase_config.contains_uid(uid);
+    if (!uid_verified){
+        LOG(ERROR) << "Firebase auth error: Given Firebase UID in a token is not privileged to make this query: " << uid;
+        return false;
+    }
+    return true;
 }
 
 Option<std::string> AuthManager::params_from_scoped_key(const std::string &scoped_api_key, const std::string& action,

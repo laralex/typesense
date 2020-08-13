@@ -2,6 +2,7 @@
 #include "firebase_config.h"
 #include "json.hpp"
 
+using pub_keys_map_t = std::map<std::string, std::string>;
 
 FirebaseConfig::FirebaseConfig(FirebaseConfig&& other) : project_id(other.project_id), 
                                                          privileged_uids(other.privileged_uids),
@@ -18,14 +19,20 @@ FirebaseConfig& FirebaseConfig::operator=(FirebaseConfig&& other) {
 
 bool FirebaseConfig::from_json_file(const std::string& path, FirebaseConfig& config) {
 
+
     std::ifstream config_file(path);
     using stream_iter = std::istreambuf_iterator<char>;
-    std::string config_content((stream_iter(config_file)), stream_iter());
+    std::string config_content;
+    try {
+        config_content = {(stream_iter(config_file)), stream_iter()};
+    } catch(const std::exception& e) {
+        return false;
+    }
 
     nlohmann::json config_json;
     try {
         config_json = nlohmann::json::parse(config_content);
-    } catch(const std::exception& e) {
+    } catch (const std::exception& e) {
         //LOG(ERROR) << "JSON error: " << e.what();
         return false;
     }
@@ -46,22 +53,27 @@ bool FirebaseConfig::from_json_file(const std::string& path, FirebaseConfig& con
         uids.emplace(uid_candidate.dump());
     }
 
-    std::map<std::string, std::vector<std::uint8_t>> public_keys;
+    std::map<std::string, std::string> public_keys;
     auto& keys_ids = config_json["public_keys_ids"];
-    auto& keys_files = config_json["public_keys_files"];
+    auto& keys_files = config_json["public_keys_files_pem"];
     for(std::size_t i = 0; i < keys_ids.size(); ++i) {
         if (!keys_ids[i].is_string() || !keys_files[i].is_string()){
             return false;
         }
         try {
-            std::ifstream key_file(keys_files[i].dump(), std::ios::binary | std::ios::ate);
-            std::ifstream::pos_type pos = key_file.tellg();
-            std::vector<uint8_t> key_bytes(pos);
+            std::ifstream key_file(keys_files[i].dump());
+            //std::ifstream::pos_type pos = key_file.tellg();
+            //std::vector<uint8_t> key_bytes(pos);
+            std::string key_pem_content;
+            try {
+                config_content = {(stream_iter(key_file)), stream_iter()};
+            } catch(const std::exception& e) {
+                return false;
+            }
+            //key_file.seekg(0, std::ios::beg);
+            //key_file.read(reinterpret_cast<char *>(&key_bytes[0]), pos);
 
-            key_file.seekg(0, std::ios::beg);
-            key_file.read(reinterpret_cast<char *>(&key_bytes[0]), pos);
-
-            public_keys.emplace(keys_ids[i].dump(), std::move(key_bytes));
+            public_keys.emplace(keys_ids[i].dump(), std::move(key_pem_content));
         } catch(const std::exception& e) {
             return false;
         }
@@ -83,12 +95,16 @@ bool FirebaseConfig::contains_uid(const std::string& uid) const {
 }
 
 
-Option<std::vector<std::uint8_t> const *> FirebaseConfig::find_public_key(const std::string& key_id) const {
+Option<std::string const *> FirebaseConfig::find_public_key(const std::string& key_id) const {
     auto pub_key_cursor = public_keys.find(key_id);
     if (pub_key_cursor != public_keys.end()) {
-        return Option<std::vector<std::uint8_t> const *>(&(pub_key_cursor->second));
+        return Option<std::string const *>(&(pub_key_cursor->second));
     }
-    return Option<std::vector<std::uint8_t> const *>(404, "firebase_public_key_unknown");
+    return Option<std::string const *>(404, "firebase_public_key_unknown");
+}
+
+const pub_keys_map_t& FirebaseConfig::get_public_keys() const {
+    return public_keys;
 }
 
 bool FirebaseConfig::is_configured() const {

@@ -3,8 +3,10 @@ project(typesense)
 
 cmake_policy(SET CMP0074 NEW)
 
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wno-unused-parameter -O2")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Wno-unused-parameter -std=c++11 -O0")
+
 set(DEP_ROOT_DIR ${CMAKE_SOURCE_DIR}/external-${CMAKE_SYSTEM_NAME})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
@@ -45,6 +47,7 @@ FIND_PACKAGE(LevelDB REQUIRED)
 FIND_PACKAGE(gflags REQUIRED)
 FIND_PACKAGE(glog REQUIRED)
 
+
 message("OpenSSL library: ${OPENSSL_LIBRARIES}")
 
 include(cmake/For.cmake)
@@ -53,6 +56,14 @@ include(cmake/RocksDB.cmake)
 include(cmake/GoogleTest.cmake)
 include(cmake/TestResources.cmake)
 include(cmake/Iconv.cmake)
+#include(cmake/firebase.cmake)
+
+#add_subdirectory(${DEP_ROOT_DIR}/firebase-cpp-sdk-6.11.0)
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Wno-unused-parameter -std=c++11 -O0 -fexceptions")
+
+#set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_COPY})
+#set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG_COPY})
+
 # include(cmake/brpc.cmake)
 set(BRPC_NAME brpc)
 set(BRAFT_NAME braft)
@@ -71,6 +82,7 @@ include_directories(${DEP_ROOT_DIR}/${ROCKSDB_NAME}/include)
 include_directories(${DEP_ROOT_DIR}/${ICONV_NAME}/include)
 include_directories(${DEP_ROOT_DIR}/${BRPC_NAME}/include)
 include_directories(${DEP_ROOT_DIR}/${BRAFT_NAME}/include)
+#include_directories(${DEP_ROOT_DIR}/${FIREBASE_NAME}/auth/src/include)
 
 # Write dependency include directories to a file
 file(WRITE ${DEP_ROOT_DIR}/includes.txt "")
@@ -80,12 +92,14 @@ file(APPEND ${DEP_ROOT_DIR}/includes.txt " ${DEP_ROOT_DIR}/${ROCKSDB_NAME}/inclu
 file(APPEND ${DEP_ROOT_DIR}/includes.txt " ${DEP_ROOT_DIR}/${ICONV_NAME}/include")
 file(APPEND ${DEP_ROOT_DIR}/includes.txt " ${DEP_ROOT_DIR}/${BRPC_NAME}/include")
 file(APPEND ${DEP_ROOT_DIR}/includes.txt " ${DEP_ROOT_DIR}/${BRAFT_NAME}/include")
+#file(APPEND ${DEP_ROOT_DIR}/includes.txt " ${DEP_ROOT_DIR}/${FIREBASE_NAME}/auth/src/include")
 
 link_directories(${DEP_ROOT_DIR}/${GTEST_NAME}/googletest/build)
 link_directories(${DEP_ROOT_DIR}/${FOR_NAME})
 link_directories(${DEP_ROOT_DIR}/${H2O_NAME}/build)
 link_directories(${DEP_ROOT_DIR}/${ROCKSDB_NAME})
 link_directories(${DEP_ROOT_DIR}/${ICONV_NAME}/lib/.libs)
+#link_directories(${DEP_ROOT_DIR}/${FIREBASE_NAME}/build/auth)
 if (APPLE)
 link_directories(${DEP_ROOT_DIR}/${BRPC_NAME}/lib)
 link_directories(${DEP_ROOT_DIR}/${BRAFT_NAME}/lib)
@@ -99,6 +113,7 @@ file(APPEND ${DEP_ROOT_DIR}/libs.txt " ${DEP_ROOT_DIR}/${ROCKSDB_NAME}")
 file(APPEND ${DEP_ROOT_DIR}/libs.txt " ${DEP_ROOT_DIR}/${ICONV_NAME}/lib/.libs")
 file(APPEND ${DEP_ROOT_DIR}/libs.txt " ${DEP_ROOT_DIR}/${BRPC_NAME}/lib")
 file(APPEND ${DEP_ROOT_DIR}/libs.txt " ${DEP_ROOT_DIR}/${BRAFT_NAME}/lib")
+#file(APPEND ${DEP_ROOT_DIR}/libs.txt " ${DEP_ROOT_DIR}/${FIREBASE_NAME}/lib")
 
 add_executable(typesense-server ${SRC_FILES} src/main/typesense_server.cpp)
 add_executable(search ${SRC_FILES} src/main/main.cpp)
@@ -149,14 +164,16 @@ else()
     list(APPEND ROCKSDB_LIBS rt)
 endif()
 
-message("!!!!!!!!!!!!!!!! CURL LIBRARIES: ${CURL_LIBRARIES}")
+# message("!!!!!!!!!!!!!!!! CURL LIBRARIES: ${CURL_LIBRARIES}")
 set(ICU_ALL_LIBRARIES ${ICU_I18N_LIBRARIES} ${ICU_LIBRARIES} ${ICU_DATA_LIBRARIES})
 set(CORE_LIBS h2o-evloop iconv ${CURL_LIBRARIES} for ${ICU_ALL_LIBRARIES} ${G3LOGGER_LIBRARIES}
               ${ROCKSDB_LIBS} ${OPENSSL_LIBRARIES} pthread dl ${STD_LIB})
 
 set(CORE_LIBS braft brpc ${LevelDB_LIBRARIES} glog ${CORE_LIBS} ${GFLAGS_LIBRARIES} ${PROTOBUF_LIBRARIES} ${SYSTEM_LIBS})
 
-message("A*(*)(*)(*)(*)(* CORE_LIBS: ${CORE_LIBS}")
+#set(CORE_LIBS ${CORE_LIBS} firebase_auth)
+
+# message("A*(*)(*)(*)(*)(* CORE_LIBS: ${CORE_LIBS}")
 target_link_libraries(typesense-core ${CORE_LIBS})
 target_link_libraries(typesense-server ${CORE_LIBS})
 target_link_libraries(search ${CORE_LIBS})

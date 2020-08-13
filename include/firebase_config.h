@@ -10,7 +10,8 @@
 class FirebaseConfig {
     std::string project_id;
     std::set<std::string> privileged_uids;
-    std::map<std::string, std::vector<std::uint8_t>> public_keys;
+    using pub_keys_map_t = std::map<std::string, std::string>;
+    pub_keys_map_t public_keys;
 public: 
 
     FirebaseConfig() = default;
@@ -24,7 +25,9 @@ public:
 
     const std::string& get_project_id() const;
     bool contains_uid(const std::string& uid) const;
-    Option<std::vector<std::uint8_t> const *> find_public_key(const std::string& key_id) const;
+    Option<std::string const *> find_public_key(const std::string& key_id) const;
+
+    const pub_keys_map_t& get_public_keys() const;
 
     bool is_configured() const;
 };

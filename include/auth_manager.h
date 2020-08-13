@@ -7,7 +7,7 @@
 #include "option.h"
 #include "store.h"
 #include "firebase_config.h"
-
+#include <jwt-cpp/jwt.h>
 struct api_key_t {
     uint32_t id;
     std::string value;
@@ -102,6 +102,7 @@ private:
 
     std::map<std::string, api_key_t> api_keys;  // stores key_value => key mapping
     FirebaseConfig firebase_config;
+    std::map<std::string, jwt::verifier<jwt::default_clock>> jwt_verifiers;
     Store *store;
 
     // Auto incrementing API KEY ID

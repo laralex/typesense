@@ -3,6 +3,7 @@
 #include <json.hpp>
 #include "collection_manager.h"
 #include "logger.h"
+#include <jwt-cpp/jwt.h>
 
 CollectionManager::CollectionManager() {
 
@@ -234,7 +235,16 @@ bool CollectionManager::firebase_token_matches(const std::string& firebase_token
         return false;
     }
 
-    return auth_manager.authenticate_firebase(firebase_token_sent);
+    try {
+        return auth_manager.authenticate_firebase(firebase_token_sent);
+    } catch (const jwt::token_verification_exception& e) {
+        LOG(ERROR) << "Firebase auth error: JWT token error: " << e.what();
+    } catch (const std::bad_cast& e) {
+        LOG(ERROR) << "Firebase auth error: JWT claim has wrong type: " << e.what();
+    } catch (const std::exception& e){
+        LOG(ERROR) << "Firebase auth error: " << e.what();
+    }
+    return false;
 }
 
 Option<Collection*> CollectionManager::create_collection(const std::string name, const std::vector<field> & fields,
