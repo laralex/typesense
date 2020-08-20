@@ -60,7 +60,7 @@ public:
     CollectionManager(CollectionManager const&) = delete;
     void operator=(CollectionManager const&) = delete;
 
-    void init(Store *store, const size_t default_num_indices, const std::string & auth_key, FirebaseConfig&& firebase_config);
+    void init(Store *store, const size_t default_num_indices, const std::string & auth_key, FirebaseConfig&& firebase_config = FirebaseConfig{});
 
     Option<bool> load(const size_t init_batch_size=1000);
 

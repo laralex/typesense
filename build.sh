@@ -3,7 +3,12 @@
 set -ex
 PROJECT_DIR=`dirname $0 | while read a; do cd $a && pwd && break; done`
 SYSTEM_NAME=$(uname -s)
-BUILD_DIR=build-$SYSTEM_NAME
+
+if [ -z "$BUILD_TYPE" ]; then
+  BUILD_TYPE=Release
+fi
+
+BUILD_DIR=BUILD-$SYSTEM_NAME-$BUILD_TYPE
 
 if [ -z "$TYPESENSE_VERSION" ]; then
   TYPESENSE_VERSION="nightly"
@@ -21,7 +26,7 @@ if [[ "$@" == *"--depclean"* ]]; then
   mkdir $PROJECT_DIR/external-$SYSTEM_NAME
 fi
 
-cmake -DTYPESENSE_VERSION=$TYPESENSE_VERSION -DCMAKE_BUILD_TYPE=Release -H$PROJECT_DIR -B$PROJECT_DIR/$BUILD_DIR
+cmake -DTYPESENSE_VERSION=$TYPESENSE_VERSION -DCMAKE_BUILD_TYPE=$BUILD_TYPE -H$PROJECT_DIR -B$PROJECT_DIR/$BUILD_DIR
 make typesense-server typesense-test -C $PROJECT_DIR/$BUILD_DIR
 
 if [[ "$@" == *"--package-binary"* ]]; then

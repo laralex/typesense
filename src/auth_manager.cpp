@@ -101,6 +101,9 @@ Option<bool> AuthManager::init(Store *store, FirebaseConfig&& firebase_config) {
             .with_audience(this->firebase_config.get_project_id())
             .with_issuer("https://securetoken.google.com/" + this->firebase_config.get_project_id())
             .with_claim("kid", jwt::claim( kv.first ));
+#ifdef DEBUG
+        verifier.leeway(100000000); // token won't expire for a few years
+#endif
         this->jwt_verifiers.emplace(kv.first, std::move(verifier));
     }
     

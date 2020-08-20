@@ -52,7 +52,7 @@ void CollectionManager::add_to_collections(Collection* collection) {
 void CollectionManager::init(Store *store,
                              const size_t default_num_indices,
                              const std::string & auth_key,
-                             FirebaseConfig&& firebase_config = FirebaseConfig()) {
+                             FirebaseConfig&& firebase_config) {
     this->store = store;
     this->bootstrap_auth_key = auth_key;
     this->default_num_indices = default_num_indices;
