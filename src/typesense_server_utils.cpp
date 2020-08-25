@@ -346,6 +346,8 @@ int run_server(const Config & config, const std::string & version, void (*master
         }
     }
 
+    LOG(INFO) << "Firebase configuration is loaded: project_id = " << config.get_project_id();
+
     CollectionManager & collectionManager = CollectionManager::get_instance();
     collectionManager.init(&store, config.get_indices_per_collection(),
                            config.get_api_key(),

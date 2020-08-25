@@ -227,9 +227,11 @@ bool CollectionManager::auth_key_matches(const std::string& auth_key_sent,
 }
 
 bool CollectionManager::firebase_token_matches(const std::string& firebase_token_sent) {
-    if (!is_firebase_configured) {
-        return true;
-    }
+    // TODO(laralex): if these lines are uncommented, then if Firebase configuration (JSON) is not valid
+    // then Typesense will act as usual, it won't require any Firebase tokens. I advise you to uncomment them 
+    // if (!is_firebase_configured) {
+    //     return true;
+    // }
     
     if(firebase_token_sent.empty()) {
         return false;

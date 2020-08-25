@@ -79,10 +79,9 @@ bool FirebaseConfig::from_json_file(const std::string& path, FirebaseConfig& con
         }
     }
 
-    FirebaseConfig result_config;
-    result_config.project_id = config_json["project_id"].dump();
-    result_config.privileged_uids = std::move(uids);
-    result_config.public_keys = std::move(public_keys);
+    config.project_id = config_json["project_id"].dump();
+    config.privileged_uids = std::move(uids);
+    config.public_keys = std::move(public_keys);
     return true;
 }
 
